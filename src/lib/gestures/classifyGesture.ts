@@ -38,7 +38,7 @@ const isFingerExtended = (
   const span = distance(tip, mcp) / palmSize;
   const tipReach = distance(tip, wrist);
   const pipReach = distance(pip, wrist);
-  return span > 0.9 && tipReach > pipReach * 1.1;
+  return span > 0.75 && tipReach > pipReach * 0.9;
 };
 
 const buildFallbackAnalysis = (): GestureAnalysis => ({
@@ -125,16 +125,14 @@ export const classifyGesture = (
     gesture = 'pointing';
     confidence = clamp((distance(indexTip, indexMcp) / palmSize - 0.9) * 0.9, 0.55, 1);
   } else if (
-    indexExtended &&
-    middleExtended &&
-    ringExtended &&
-    pinkyExtended &&
-    (thumbExtended || thumbSpread > 0.6)
+    (indexExtended || middleExtended) &&
+    (ringExtended || pinkyExtended) &&
+    (thumbExtended || thumbSpread > 0.5)
   ) {
     gesture = 'openPalm';
     confidence = clamp(
-      (distance(indexTip, wrist) + distance(middleTip, wrist)) / (palmSize * 5),
-      0.55,
+      (distance(indexTip, wrist) + distance(middleTip, wrist)) / (palmSize * 6),
+      0.45,
       1,
     );
   } else if (
@@ -154,7 +152,7 @@ export const classifyGesture = (
     gesture,
     confidence,
     center: {
-      x: clamp(1 - palmCenter.x / frameSize.width, 0, 1),
+      x: clamp(palmCenter.x / frameSize.width, 0, 1),
       y: clamp(palmCenter.y / frameSize.height, 0, 1),
     },
     pinchAmount,

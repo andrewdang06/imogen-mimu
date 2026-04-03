@@ -167,8 +167,9 @@ export class InstrumentEngine {
     mainOscillator.frequency.setTargetAtTime(this.smoothedFrequency, now, 0.04);
     harmonicOscillator.frequency.setTargetAtTime(this.smoothedFrequency * 2, now, 0.04);
 
-    const sustainLevel = shouldSound ? 0.04 + heightControl * 0.18 : 0;
-    sustainGain.gain.setTargetAtTime(sustainLevel, now, shouldSound ? ATTACK_TIME : RELEASE_TIME);
+    // Keep pitch playing continuously instead of silencing
+    const sustainLevel = shouldSound ? 0.06 + heightControl * 0.18 : 0.02;
+    sustainGain.gain.setTargetAtTime(sustainLevel, now, 0.08);
 
     const filterFrequency = 250 + this.smoothedX * 2800 + heightControl * 1800;
     lowpass.frequency.setTargetAtTime(filterFrequency, now, 0.05);

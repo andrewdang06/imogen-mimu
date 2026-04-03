@@ -40,7 +40,7 @@ export const useInvisibleInstrument = () => {
   const [primaryHand, setPrimaryHand] = useState<AnnotatedPrediction | null>(null);
 
   const audioEngine = useMemo(() => new InstrumentEngine(), []);
-  const gestureSmoother = useMemo(() => new GestureSmoother(7, 0.62), []);
+  const gestureSmoother = useMemo(() => new GestureSmoother(7, 0.45), []);
 
   useEffect(() => {
     const videoElement = videoRef.current;
