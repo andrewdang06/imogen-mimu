@@ -99,7 +99,7 @@ export const useInvisibleInstrument = () => {
         setHandPosition(stable.center);
         setPinchAmount(stable.pinchAmount);
 
-        if (stableGesture === 'openPalm') {
+        if (stableGesture === 'openPalm' || stableGesture === 'pointing') {
           audioEngine.setControlEnabled(true);
           void audioEngine.resume();
         }

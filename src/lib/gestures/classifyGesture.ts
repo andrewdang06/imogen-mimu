@@ -129,12 +129,12 @@ export const classifyGesture = (
     middleExtended &&
     ringExtended &&
     pinkyExtended &&
-    (thumbExtended || thumbSpread > 0.7)
+    (thumbExtended || thumbSpread > 0.6)
   ) {
     gesture = 'openPalm';
     confidence = clamp(
       (distance(indexTip, wrist) + distance(middleTip, wrist)) / (palmSize * 5),
-      0.65,
+      0.55,
       1,
     );
   } else if (

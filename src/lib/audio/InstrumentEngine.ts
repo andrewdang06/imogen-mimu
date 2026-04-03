@@ -157,8 +157,8 @@ export class InstrumentEngine {
     } = this.nodes;
 
     const shouldSound = frame.hasHand && this.controlEnabled;
-    this.smoothedX = lerp(this.smoothedX, frame.center.x, 0.2);
-    this.smoothedY = lerp(this.smoothedY, frame.center.y, 0.2);
+    this.smoothedX = lerp(this.smoothedX, frame.center.x, 0.35);
+    this.smoothedY = lerp(this.smoothedY, frame.center.y, 0.35);
 
     const heightControl = clamp(1 - this.smoothedY, 0, 1);
     const pitch = 130 * 2 ** (heightControl * 2.2);
