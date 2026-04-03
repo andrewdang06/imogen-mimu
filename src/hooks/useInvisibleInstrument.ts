@@ -1,4 +1,4 @@
-import type { Hand } from '@tensorflow-models/hand-pose-detection';
+import type { AnnotatedPrediction } from '@tensorflow-models/handpose';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { InstrumentEngine } from '../lib/audio/InstrumentEngine';
 import { GestureSmoother } from '../lib/gestures/GestureSmoother';
@@ -6,18 +6,16 @@ import { classifyGesture } from '../lib/gestures/classifyGesture';
 import { createHandTracker } from '../lib/handtracking/createHandTracker';
 import type { GestureAnalysis, GestureName } from '../types';
 
-const choosePrimaryHand = (hands: Hand[]): Hand | null => {
+const choosePrimaryHand = (
+  hands: AnnotatedPrediction[],
+): AnnotatedPrediction | null => {
   if (hands.length === 0) {
     return null;
   }
 
-  return [...hands].sort((left, right) => {
-    const rightHandedBonus = right.handedness === 'Right' ? 1 : 0;
-    const leftHandedBonus = left.handedness === 'Right' ? 1 : 0;
-    const rightScore = (right.score ?? 0) + rightHandedBonus;
-    const leftScore = (left.score ?? 0) + leftHandedBonus;
-    return rightScore - leftScore;
-  })[0];
+  return [...hands].sort(
+    (left, right) => right.handInViewConfidence - left.handInViewConfidence,
+  )[0];
 };
 
 const createEmptyAnalysis = (): GestureAnalysis => ({
@@ -77,9 +75,7 @@ export const useInvisibleInstrument = () => {
       processingRef.current = true;
 
       try {
-        const hands = await detector.estimateHands(videoElement, {
-          flipHorizontal: true,
-        });
+        const hands = await detector.estimateHands(videoElement, true);
         const primaryHand = choosePrimaryHand(hands);
         const analysis = primaryHand
           ? classifyGesture(primaryHand, {
@@ -175,7 +171,6 @@ export const useInvisibleInstrument = () => {
 
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
-      detector?.dispose();
       audioEngine.dispose();
     };
   }, [audioEngine, gestureSmoother]);
@@ -185,4 +180,3 @@ export const useInvisibleInstrument = () => {
     videoRef,
   };
 };
-

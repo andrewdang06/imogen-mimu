@@ -1,62 +1,31 @@
-import type { Hand } from '@tensorflow-models/hand-pose-detection';
+import type { AnnotatedPrediction } from '@tensorflow-models/handpose';
 import { averagePoint, clamp, distance } from '../math';
 import type { GestureAnalysis, GestureName, Point2D } from '../../types';
 
-type KeypointName =
-  | 'wrist'
-  | 'thumb_tip'
-  | 'thumb_mcp'
-  | 'index_finger_mcp'
-  | 'index_finger_pip'
-  | 'index_finger_tip'
-  | 'middle_finger_mcp'
-  | 'middle_finger_pip'
-  | 'middle_finger_tip'
-  | 'ring_finger_mcp'
-  | 'ring_finger_pip'
-  | 'ring_finger_tip'
-  | 'pinky_finger_mcp'
-  | 'pinky_finger_pip'
-  | 'pinky_finger_tip';
+const LANDMARK_INDEX = {
+  indexMcp: 5,
+  indexPip: 6,
+  indexTip: 8,
+  middleMcp: 9,
+  middlePip: 10,
+  middleTip: 12,
+  pinkyMcp: 17,
+  pinkyPip: 18,
+  pinkyTip: 20,
+  ringMcp: 13,
+  ringPip: 14,
+  ringTip: 16,
+  thumbMcp: 2,
+  thumbTip: 4,
+  wrist: 0,
+} as const;
 
-const REQUIRED_POINTS: KeypointName[] = [
-  'wrist',
-  'thumb_tip',
-  'thumb_mcp',
-  'index_finger_mcp',
-  'index_finger_pip',
-  'index_finger_tip',
-  'middle_finger_mcp',
-  'middle_finger_pip',
-  'middle_finger_tip',
-  'ring_finger_mcp',
-  'ring_finger_pip',
-  'ring_finger_tip',
-  'pinky_finger_mcp',
-  'pinky_finger_pip',
-  'pinky_finger_tip',
-];
-
-const getHandedness = (hand: Hand): 'Left' | 'Right' | 'Unknown' => {
-  if (typeof hand.handedness === 'string') {
-    return hand.handedness === 'Left' || hand.handedness === 'Right'
-      ? hand.handedness
-      : 'Unknown';
+const toPoint = (value: [number, number, number] | undefined): Point2D | null => {
+  if (!value) {
+    return null;
   }
 
-  return 'Unknown';
-};
-
-const asPointMap = (hand: Hand): Map<string, Point2D> => {
-  const map = new Map<string, Point2D>();
-
-  hand.keypoints.forEach((keypoint) => {
-    if (keypoint.name) {
-      map.set(keypoint.name, { x: keypoint.x, y: keypoint.y });
-    }
-  });
-
-  return map;
+  return { x: value[0], y: value[1] };
 };
 
 const isFingerExtended = (
@@ -81,56 +50,57 @@ const buildFallbackAnalysis = (): GestureAnalysis => ({
 });
 
 export const classifyGesture = (
-  hand: Hand,
+  hand: AnnotatedPrediction,
   frameSize: { width: number; height: number },
 ): GestureAnalysis => {
-  const points = asPointMap(hand);
-  const hasRequiredPoints = REQUIRED_POINTS.every((key) => points.has(key));
+  const landmarks = hand.landmarks;
 
-  if (!hasRequiredPoints || frameSize.width === 0 || frameSize.height === 0) {
+  if (landmarks.length < 21 || frameSize.width === 0 || frameSize.height === 0) {
     return buildFallbackAnalysis();
   }
 
-  const wrist = points.get('wrist')!;
-  const thumbTip = points.get('thumb_tip')!;
-  const thumbMcp = points.get('thumb_mcp')!;
-  const indexMcp = points.get('index_finger_mcp')!;
-  const indexPip = points.get('index_finger_pip')!;
-  const indexTip = points.get('index_finger_tip')!;
-  const middleMcp = points.get('middle_finger_mcp')!;
-  const middlePip = points.get('middle_finger_pip')!;
-  const middleTip = points.get('middle_finger_tip')!;
-  const ringMcp = points.get('ring_finger_mcp')!;
-  const ringPip = points.get('ring_finger_pip')!;
-  const ringTip = points.get('ring_finger_tip')!;
-  const pinkyMcp = points.get('pinky_finger_mcp')!;
-  const pinkyPip = points.get('pinky_finger_pip')!;
-  const pinkyTip = points.get('pinky_finger_tip')!;
+  const wrist = toPoint(landmarks[LANDMARK_INDEX.wrist]);
+  const thumbTip = toPoint(landmarks[LANDMARK_INDEX.thumbTip]);
+  const thumbMcp = toPoint(landmarks[LANDMARK_INDEX.thumbMcp]);
+  const indexMcp = toPoint(landmarks[LANDMARK_INDEX.indexMcp]);
+  const indexPip = toPoint(landmarks[LANDMARK_INDEX.indexPip]);
+  const indexTip = toPoint(landmarks[LANDMARK_INDEX.indexTip]);
+  const middleMcp = toPoint(landmarks[LANDMARK_INDEX.middleMcp]);
+  const middlePip = toPoint(landmarks[LANDMARK_INDEX.middlePip]);
+  const middleTip = toPoint(landmarks[LANDMARK_INDEX.middleTip]);
+  const ringMcp = toPoint(landmarks[LANDMARK_INDEX.ringMcp]);
+  const ringPip = toPoint(landmarks[LANDMARK_INDEX.ringPip]);
+  const ringTip = toPoint(landmarks[LANDMARK_INDEX.ringTip]);
+  const pinkyMcp = toPoint(landmarks[LANDMARK_INDEX.pinkyMcp]);
+  const pinkyPip = toPoint(landmarks[LANDMARK_INDEX.pinkyPip]);
+  const pinkyTip = toPoint(landmarks[LANDMARK_INDEX.pinkyTip]);
+
+  if (
+    !wrist ||
+    !thumbTip ||
+    !thumbMcp ||
+    !indexMcp ||
+    !indexPip ||
+    !indexTip ||
+    !middleMcp ||
+    !middlePip ||
+    !middleTip ||
+    !ringMcp ||
+    !ringPip ||
+    !ringTip ||
+    !pinkyMcp ||
+    !pinkyPip ||
+    !pinkyTip
+  ) {
+    return buildFallbackAnalysis();
+  }
 
   const palmSize = Math.max(distance(wrist, middleMcp), 1);
 
-  const indexExtended = isFingerExtended(
-    indexTip,
-    indexPip,
-    indexMcp,
-    wrist,
-    palmSize,
-  );
-  const middleExtended = isFingerExtended(
-    middleTip,
-    middlePip,
-    middleMcp,
-    wrist,
-    palmSize,
-  );
+  const indexExtended = isFingerExtended(indexTip, indexPip, indexMcp, wrist, palmSize);
+  const middleExtended = isFingerExtended(middleTip, middlePip, middleMcp, wrist, palmSize);
   const ringExtended = isFingerExtended(ringTip, ringPip, ringMcp, wrist, palmSize);
-  const pinkyExtended = isFingerExtended(
-    pinkyTip,
-    pinkyPip,
-    pinkyMcp,
-    wrist,
-    palmSize,
-  );
+  const pinkyExtended = isFingerExtended(pinkyTip, pinkyPip, pinkyMcp, wrist, palmSize);
 
   const thumbReach = distance(thumbTip, thumbMcp) / palmSize;
   const thumbSpread = distance(thumbTip, indexMcp) / palmSize;
@@ -178,13 +148,7 @@ export const classifyGesture = (
     confidence = clamp(1 - thumbReach / 0.85, 0.55, 1);
   }
 
-  const palmCenter = averagePoint([
-    wrist,
-    indexMcp,
-    middleMcp,
-    ringMcp,
-    pinkyMcp,
-  ]);
+  const palmCenter = averagePoint([wrist, indexMcp, middleMcp, ringMcp, pinkyMcp]);
 
   return {
     gesture,
@@ -194,6 +158,6 @@ export const classifyGesture = (
       y: clamp(palmCenter.y / frameSize.height, 0, 1),
     },
     pinchAmount,
-    handedness: getHandedness(hand),
+    handedness: 'Unknown',
   };
 };
