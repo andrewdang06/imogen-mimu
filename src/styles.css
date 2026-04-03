@@ -67,7 +67,7 @@ body {
   font-family: 'Courier New', monospace;
   color: #00ff00;
   z-index: 10;
-  min-width: 250px;
+  min-width: 280px;
 }
 
 .gesture-text p {
@@ -79,6 +79,60 @@ body {
 .gesture-text strong {
   color: #ffff00;
   font-weight: bold;
+}
+
+.gesture-action {
+  color: #ff00ff !important;
+  font-weight: bold;
+  padding: 6px 0;
+  font-size: 15px;
+}
+
+.gesture-legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #00aaff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  color: #00aaff;
+  z-index: 10;
+  min-width: 240px;
+  max-width: 300px;
+}
+
+.legend-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #ffff00;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #00aaff;
+  padding-bottom: 8px;
+}
+
+.legend-subtitle {
+  font-weight: bold;
+  font-size: 12px;
+  color: #00ff88;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.legend-item {
+  padding: 4px 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+}
+
+.legend-divider {
+  height: 1px;
+  background: #00aaff;
+  margin: 10px 0;
+  opacity: 0.5;
 }
 
 .hand-canvas {

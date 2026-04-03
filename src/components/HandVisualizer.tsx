@@ -11,6 +11,15 @@ interface HandVisualizerProps {
   pinchAmount: number;
 }
 
+const GESTURE_LEGEND: Record<GestureName | 'unknown', string> = {
+  'openPalm': '🔊 Enable Audio Control',
+  'fist': '🔇 Mute / Stop Sound',
+  'pinch': '✨ Trigger Note',
+  'pointing': '👆 Control Mode',
+  'none': '--- No Hand Detected ---',
+  unknown: '❓ Unknown',
+};
+
 const HAND_CONNECTIONS = [
   [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
   [0, 5], [5, 6], [6, 7], [7, 8], // Index
@@ -79,6 +88,8 @@ export const HandVisualizer: React.FC<HandVisualizerProps> = ({
     }
   }, [videoRef, primaryHand]);
 
+  const gestureDescription = GESTURE_LEGEND[currentGesture] || GESTURE_LEGEND['unknown'];
+
   return (
     <>
       <canvas
@@ -96,10 +107,22 @@ export const HandVisualizer: React.FC<HandVisualizerProps> = ({
       <div className="gesture-info">
         <div className="gesture-text">
           <p>Gesture: <strong>{currentGesture}</strong></p>
+          <p className="gesture-action">{gestureDescription}</p>
           <p>Confidence: {(gestureConfidence * 100).toFixed(1)}%</p>
           <p>Hand Position: X={handPosition.x.toFixed(2)} Y={handPosition.y.toFixed(2)}</p>
           <p>Pinch Amount: {(pinchAmount * 100).toFixed(1)}%</p>
         </div>
+      </div>
+      <div className="gesture-legend">
+        <div className="legend-title">GESTURE CONTROLS</div>
+        <div className="legend-item">🤚 Open Palm → 🔊 Enable Audio</div>
+        <div className="legend-item">✋ Point → 👆 Direct Control</div>
+        <div className="legend-item">👌 Pinch → ✨ Trigger Note</div>
+        <div className="legend-item">✊ Fist → 🔇 Mute</div>
+        <div className="legend-divider"></div>
+        <div className="legend-subtitle">AUDIO PARAMETERS</div>
+        <div className="legend-item">↑↓ Height → 🎵 Pitch</div>
+        <div className="legend-item">←→ Horiz. → 🎚️ Filter</div>
       </div>
     </>
   );
