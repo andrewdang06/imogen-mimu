@@ -97,7 +97,7 @@ export class InstrumentEngine {
     pan.pan.value = 0;
 
     const masterGain = audioContext.createGain();
-    masterGain.gain.value = 0.8;
+    masterGain.gain.value = 1.5;
 
     vibratoLfo.connect(vibrato);
     vibrato.connect(mainOscillator.frequency);
@@ -168,7 +168,7 @@ export class InstrumentEngine {
     harmonicOscillator.frequency.setTargetAtTime(this.smoothedFrequency * 2, now, 0.04);
 
     // Keep pitch playing continuously instead of silencing
-    const sustainLevel = shouldSound ? 0.06 + heightControl * 0.18 : 0.02;
+    const sustainLevel = shouldSound ? 0.12 + heightControl * 0.24 : 0.04;
     sustainGain.gain.setTargetAtTime(sustainLevel, now, 0.08);
 
     const filterFrequency = 250 + this.smoothedX * 2800 + heightControl * 1800;
@@ -192,7 +192,7 @@ export class InstrumentEngine {
     }
 
     const now = this.audioContext.currentTime;
-    const target = 0.12 + clamp(intensity, 0, 1) * 0.28;
+    const target = 0.24 + clamp(intensity, 0, 1) * 0.56;
     const accentGain = this.nodes.accentGain.gain;
 
     accentGain.cancelScheduledValues(now);
