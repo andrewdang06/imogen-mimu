@@ -112,9 +112,14 @@ export const classifyGesture = (
   let gesture: GestureName = 'none';
   let confidence = 0.35;
 
-  if (pinchDistance < 0.38 && indexExtended) {
+  // Pinch detection: thumb and index close together, both slightly extended
+  if (
+    pinchDistance < 0.35 &&
+    thumbReach > 0.45 &&
+    distance(indexTip, indexMcp) / palmSize > 0.8
+  ) {
     gesture = 'pinch';
-    confidence = clamp(1 - pinchDistance / 0.38, 0.6, 1);
+    confidence = clamp(1 - pinchDistance / 0.35, 0.65, 1);
   } else if (
     indexExtended &&
     !middleExtended &&

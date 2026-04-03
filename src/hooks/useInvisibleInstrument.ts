@@ -13,7 +13,13 @@ const choosePrimaryHand = (
     return null;
   }
 
-  return [...hands].sort(
+  // Filter to high-confidence hands only, then pick the strongest
+  const strongHands = hands.filter((h) => h.handInViewConfidence > 0.7);
+  if (strongHands.length === 0) {
+    return null;
+  }
+
+  return [...strongHands].sort(
     (left, right) => right.handInViewConfidence - left.handInViewConfidence,
   )[0];
 };
@@ -40,7 +46,7 @@ export const useInvisibleInstrument = () => {
   const [primaryHand, setPrimaryHand] = useState<AnnotatedPrediction | null>(null);
 
   const audioEngine = useMemo(() => new InstrumentEngine(), []);
-  const gestureSmoother = useMemo(() => new GestureSmoother(7, 0.45), []);
+  const gestureSmoother = useMemo(() => new GestureSmoother(5, 0.4), []);
 
   useEffect(() => {
     const videoElement = videoRef.current;
