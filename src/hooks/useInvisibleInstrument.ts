@@ -33,6 +33,11 @@ export const useInvisibleInstrument = () => {
   const processingRef = useRef(false);
   const lastGestureRef = useRef<GestureName>('none');
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [currentGesture, setCurrentGesture] = useState<GestureName>('none');
+  const [gestureConfidence, setGestureConfidence] = useState(0);
+  const [handPosition, setHandPosition] = useState({ x: 0, y: 0 });
+  const [pinchAmount, setPinchAmount] = useState(0);
+  const [primaryHand, setPrimaryHand] = useState<AnnotatedPrediction | null>(null);
 
   const audioEngine = useMemo(() => new InstrumentEngine(), []);
   const gestureSmoother = useMemo(() => new GestureSmoother(7, 0.62), []);
@@ -76,16 +81,23 @@ export const useInvisibleInstrument = () => {
 
       try {
         const hands = await detector.estimateHands(videoElement, true);
-        const primaryHand = choosePrimaryHand(hands);
-        const analysis = primaryHand
-          ? classifyGesture(primaryHand, {
+        const primary = choosePrimaryHand(hands);
+        const analysis = primary
+          ? classifyGesture(primary, {
               width: videoElement.videoWidth,
               height: videoElement.videoHeight,
             })
           : createEmptyAnalysis();
 
-        const stable = gestureSmoother.next(analysis, Boolean(primaryHand));
+        const stable = gestureSmoother.next(analysis, Boolean(primary));
         const stableGesture = stable.stableGesture;
+
+        // Update visualization state
+        setPrimaryHand(primary);
+        setCurrentGesture(stableGesture);
+        setGestureConfidence(stable.confidence || analysis.confidence);
+        setHandPosition(stable.center);
+        setPinchAmount(stable.pinchAmount);
 
         if (stableGesture === 'openPalm') {
           audioEngine.setControlEnabled(true);
@@ -178,5 +190,10 @@ export const useInvisibleInstrument = () => {
   return {
     cameraError,
     videoRef,
+    currentGesture,
+    gestureConfidence,
+    handPosition,
+    pinchAmount,
+    primaryHand,
   };
 };

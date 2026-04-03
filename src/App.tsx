@@ -1,7 +1,16 @@
 import { useInvisibleInstrument } from './hooks/useInvisibleInstrument';
+import { HandVisualizer } from './components/HandVisualizer';
 
 const App = () => {
-  const { cameraError, videoRef } = useInvisibleInstrument();
+  const { 
+    cameraError, 
+    videoRef,
+    currentGesture,
+    gestureConfidence,
+    handPosition,
+    pinchAmount,
+    primaryHand,
+  } = useInvisibleInstrument();
 
   if (cameraError) {
     return (
@@ -20,6 +29,14 @@ const App = () => {
         className="camera-feed"
         muted
         playsInline
+      />
+      <HandVisualizer
+        videoRef={videoRef}
+        primaryHand={primaryHand}
+        currentGesture={currentGesture}
+        gestureConfidence={gestureConfidence}
+        handPosition={handPosition}
+        pinchAmount={pinchAmount}
       />
     </main>
   );
