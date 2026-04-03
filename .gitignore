@@ -20,3 +20,8 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vscode/
+
+*.tsbuildinfo
+*.d.ts.map
+vite.config.js
+vite.config.d.ts
